@@ -48,24 +48,6 @@ The S3-hosted dashboard lists every scan for the repo as a PASS or FAIL row, wit
 
 ![Dashboard](docs/demo/6-dashboard.gif)
 
-### Step 7 · Infrastructure running on AWS
-
-`terraform output` lists the live resources: ALB, API Gateway, DynamoDB tables, S3 buckets and SNS topics. The ASG has a healthy, in-service scanner instance. Both Lambda functions (`sast-handler` and `dashboard-api`) are deployed.
-
-![Infrastructure CLI](docs/demo/7-infrastructure-cli.gif)
-
-### Step 8 · Lambda `sast-handler` configuration
-
-The handler's environment variables wire it to the scanner (`SAST_URL`), DynamoDB, S3, both SNS topics and the dashboard URL used in the PR comment.
-
-![Lambda config](docs/demo/8-lambda-config.gif)
-
-### Step 9 · Workflow: differential scan
-
-In `sast.yml`, `git diff --diff-filter=AM` against the base branch picks only the JS files added or modified in the PR. The payload is built with `jq`, so code content is escaped safely before it is sent to the API.
-
-![Workflow diff scan](docs/demo/9-workflow-diff-scan.gif)
-
 ---
 
 ## Architecture
@@ -102,6 +84,30 @@ GitHub Actions posts PR comment with severity table
 Dashboard (read path):
 API Gateway → Lambda dashboard-api → DynamoDB + S3 → S3 static frontend
 ```
+
+---
+
+## Under the Hood
+
+What the demo runs on: the deployed resources, how the Lambda is wired, and how the workflow picks which files to scan.
+
+### Deployed infrastructure
+
+`terraform output` lists the live resources: ALB, API Gateway, DynamoDB tables, S3 buckets and SNS topics. The ASG has a healthy, in-service scanner instance. Both Lambda functions (`sast-handler` and `dashboard-api`) are deployed.
+
+![Infrastructure CLI](docs/demo/7-infrastructure-cli.gif)
+
+### Lambda wiring
+
+The handler's environment variables wire it to the scanner (`SAST_URL`), DynamoDB, S3, both SNS topics and the dashboard URL used in the PR comment.
+
+![Lambda config](docs/demo/8-lambda-config.gif)
+
+### Differential scan in `sast.yml`
+
+In `sast.yml`, `git diff --diff-filter=AM` against the base branch picks only the JS files added or modified in the PR. The payload is built with `jq`, so code content is escaped safely before it is sent to the API.
+
+![Workflow diff scan](docs/demo/9-workflow-diff-scan.gif)
 
 ---
 
