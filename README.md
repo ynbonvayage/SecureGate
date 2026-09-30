@@ -8,6 +8,66 @@ Automatically scans every pull request for security vulnerabilities and **blocks
 
 ---
 
+## Demo — Step by Step
+
+Two PRs go through the same pipeline: one with vulnerable code and one with clean code. The GIFs are sped-up clips from our final demo recording.
+
+### Step 1 · Open a PR with vulnerable code
+
+`demo-test.js` contains hardcoded secrets, NoSQL injection from `req.query`, `eval` on user input and `innerHTML` from user data. A PR from `demo/vulnerable-code` is opened with `gh pr create`.
+
+![Open vulnerable PR](docs/demo/1-open-vulnerable-pr.gif)
+
+### Step 2 · Scan finds HIGH issues → PR blocked
+
+GitHub Actions runs the scan and the bot posts a severity table (**HIGH 5**). The workflow exits with code 1, so the PR shows **All checks have failed** and cannot be merged. The comment links to the dashboard.
+
+![PR blocked](docs/demo/2-pr-blocked.gif)
+
+### Step 3 · SNS email alert
+
+Because HIGH findings were found, SNS `vuln-alerts` sends an email with the repo, scan ID, severity summary, S3 report path and a dashboard link.
+
+![SNS alert email](docs/demo/3-sns-alert-email.gif)
+
+### Step 4 · Open a PR with clean code
+
+`demo-clean.js` is a small utility function with nothing to flag. A second PR is opened from `demo/clean-code`.
+
+![Open clean PR](docs/demo/4-open-clean-pr.gif)
+
+### Step 5 · Clean PR passes
+
+Same pipeline, different code: **HIGH 0**, **All checks have passed** and the merge is allowed. No alert email is sent.
+
+![Clean PR passes](docs/demo/5-clean-pr-passes.gif)
+
+### Step 6 · Dashboard: scan history and report viewer
+
+The S3-hosted dashboard lists every scan for the repo as a PASS or FAIL row, with totals at the top. **View Report** loads the full finding list from S3, with severity, rule, line and the code that triggered it.
+
+![Dashboard](docs/demo/6-dashboard.gif)
+
+### Step 7 · Infrastructure running on AWS
+
+`terraform output` lists the live resources: ALB, API Gateway, DynamoDB tables, S3 buckets and SNS topics. The ASG has a healthy, in-service scanner instance. Both Lambda functions (`sast-handler` and `dashboard-api`) are deployed.
+
+![Infrastructure CLI](docs/demo/7-infrastructure-cli.gif)
+
+### Step 8 · Lambda `sast-handler` configuration
+
+The handler's environment variables wire it to the scanner (`SAST_URL`), DynamoDB, S3, both SNS topics and the dashboard URL used in the PR comment.
+
+![Lambda config](docs/demo/8-lambda-config.gif)
+
+### Step 9 · Workflow: differential scan
+
+In `sast.yml`, `git diff --diff-filter=AM` against the base branch picks only the JS files added or modified in the PR. The payload is built with `jq`, so code content is escaped safely before it is sent to the API.
+
+![Workflow diff scan](docs/demo/9-workflow-diff-scan.gif)
+
+---
+
 ## Architecture
 
 ```
