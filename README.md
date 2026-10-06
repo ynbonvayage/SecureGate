@@ -14,9 +14,17 @@ Two PRs go through the same pipeline: one with vulnerable code and one with clea
 
 ### Step 1 · Open a PR with vulnerable code
 
-`demo-test.js` contains hardcoded secrets, NoSQL injection from `req.query`, `eval` on user input and `innerHTML` from user data. A PR from `demo/vulnerable-code` is opened with `gh pr create`.
+A PR from `demo/vulnerable-code` adds `demo-test.js`. Five of its lines match HIGH severity rules:
 
-![Open vulnerable PR](docs/demo/1-open-vulnerable-pr.gif)
+```js
+// demo-test.js
+const apiKey = "ABCDEFGHIJKLMNOP1234";       // HIGH: hardcoded secret
+const password = "admin123456";              // HIGH: hardcoded secret
+const db = mongoose.connect(req.body.url);
+db.find(req.query);                          // HIGH: NoSQL injection
+eval(userInput);                             // HIGH: insecure function
+res.innerHTML = req.body.data;               // HIGH: XSS
+```
 
 ### Step 2 · Scan finds HIGH issues → PR blocked
 
@@ -32,9 +40,16 @@ Because HIGH findings were found, SNS `vuln-alerts` sends an email with the repo
 
 ### Step 4 · Open a PR with clean code
 
-`demo-clean.js` is a small utility function with nothing to flag. A second PR is opened from `demo/clean-code`.
+A second PR from `demo/clean-code` adds `demo-clean.js`, a small utility function with nothing to flag:
 
-![Open clean PR](docs/demo/4-open-clean-pr.gif)
+```js
+// demo-clean.js
+function formatScanSummary(high, medium, low) {
+  const total = high + medium + low;
+  return { high, medium, low, total };
+}
+module.exports = { formatScanSummary };
+```
 
 ### Step 5 · Clean PR passes
 
