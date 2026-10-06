@@ -95,19 +95,13 @@ What the demo runs on: the deployed resources, how the Lambda is wired, and how 
 
 `terraform output` lists the live resources: ALB, API Gateway, DynamoDB tables, S3 buckets and SNS topics. The ASG has a healthy, in-service scanner instance. Both Lambda functions (`sast-handler` and `dashboard-api`) are deployed.
 
-![Infrastructure CLI](docs/demo/7-infrastructure-cli.gif)
-
 ### Lambda wiring
 
 The handler's environment variables wire it to the scanner (`SAST_URL`), DynamoDB, S3, both SNS topics and the dashboard URL used in the PR comment.
 
-![Lambda config](docs/demo/8-lambda-config.gif)
-
 ### Differential scan in `sast.yml`
 
 In `sast.yml`, `git diff --diff-filter=AM` against the base branch picks only the JS files added or modified in the PR. The payload is built with `jq`, so code content is escaped safely before it is sent to the API.
-
-![Workflow diff scan](docs/demo/9-workflow-diff-scan.gif)
 
 ---
 
