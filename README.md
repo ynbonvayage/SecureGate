@@ -36,7 +36,7 @@ GitHub Actions runs the scan and the bot posts a severity table (**HIGH 5**). Th
 
 Because HIGH findings were found, SNS `vuln-alerts` sends an email with the repo, scan ID, severity summary, S3 report path and a dashboard link.
 
-![SNS alert email](docs/demo/3-sns-alert-email.gif)
+![SNS alert email](docs/demo/3-sns-alert-email.png)
 
 ### Step 4 · Open a PR with clean code
 
